@@ -27,7 +27,7 @@ client.on("message", message => {
     }
 })
 
-function sendDM (discordUsername) {
+function findUser (discordUsername) {
     const discordUser = discordUsername.substr(0, discordUsername.indexOf("#"));
     const discordDiscriminator = discordUsername.substr(discordUsername.indexOf("#") + 1, discordUsername.length - 1);
     const dmUser = client.users.cache.find(member => member.username === discordUser && member.discriminator === discordDiscriminator)
@@ -63,7 +63,7 @@ function sendRatedApp(app) {
                             if (currentStatus >= 4 && votes >= 4) {
                                 editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Approved");
                                 applicationChannel.send(messagesJS.getApproved(app.mcUsername, currentStatus, app.discordUsername));
-                                const appliedUser = sendDM(app.discordUsername);
+                                const appliedUser = findUser(app.discordUsername);
                                 if (appliedUser != null) {
                                     appliedUser.send(messagesJS.sendDM(app.mcUsername, currentStatus, "Approved"));
                                 }
@@ -93,7 +93,7 @@ function sendRatedApp(app) {
                             } else if (currentStatus <= 0 && votes >= 4) {
                                 editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Denied");
                                 applicationChannel.send(messagesJS.getDenied(app.mcUsername, currentStatus, app.discordUsername));
-                                const appliedUser = sendDM(app.discordUsername);
+                                const appliedUser = findUser(app.discordUsername);
                                 if (appliedUser != null) {
                                     appliedUser.send(messagesJS.sendDM(app.mcUsername, currentStatus, "Denied"));
                                 }
@@ -200,19 +200,37 @@ function sendApp(app) {
 var express = require('express');
 var app = express();
 var fs = require("fs");
+app.get('/verifyAccount', function (req, res) {
+    const username = req.query.username;
+    const link = req.query.link;
+    const discordDiscriminator = req.query.discriminator;
+    const user = findUser(username + "#" + discordDiscriminator);
+    if (user) {
+        user.send(messagesJS.getVerification(user.username, link));
+
+        res.status(200).send({
+            status: true
+        })
+    } else {
+        res.status(200).send({
+            status: false,
+            message: "Couldnt find User in Server", 
+            code: 12
+        })
+    }
+   
+});
+
 
 app.get('/displayApp', function (req, res) {
     const application = req.query.application;
-
     const response = JSON.parse(application);
-    // console.log(response.Application);
-    console.log("the username is: " + sendDM(response.Application.discordUsername));
-    if (sendDM(response.Application.discordUsername) != undefined) {
+    console.log("the username is: " + findUser(response.Application.discordUsername));
+    if (findUser(response.Application.discordUsername) != undefined) {
         sendApp(response.Application);
         res.status(200).send({status: true});
     } else {
         res.status(200).send({status: false, message: "Couldnt find User in Server", code: 12});
-        //res.status(500).json();
     }
     
 })

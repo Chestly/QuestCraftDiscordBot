@@ -49,6 +49,29 @@ module.exports = {
         }
         return message
     },
+    getVerification: function (user, link) {
+        const message = {
+            embed: {
+                color: 3066993,
+                title: "User " + user + " Discord Verification",
+                description: "User "+ user + " has requested a Discord verification on your account, If this is you please click below",
+                fields: [{
+                    name: "Username",
+                    value: user
+                },
+                {
+                    name: "Verification",
+                    value: "[Verify](" + link +")"
+                }
+                ],
+                timestamp: new Date(),
+                footer: {
+                    text: "© https://www.questcraft.net"
+                }
+            }
+        }
+        return message
+    },
     getApproved: function (MCUser, status, discordName) {
         const message = {
             embed: {
