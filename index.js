@@ -21,7 +21,12 @@ client.on("message", message => {
     const args = message.content.split(" ");
     if (message.channel.id == applicationChannel.id) {
 
-        if (args[0] == `${prefix}requestApp`) {
+        if (args[0] == `${prefix}reload`) {
+            const primKey = args[1];
+            serverContact.contactServer("getApplicationData", {"username": primKey}, function(response) {
+                const application = response.Application;
+                sendApp(application);
+            });
         } else if (args[0] == `${prefix}postApp`) {
         }
     }
@@ -36,11 +41,10 @@ function findUser (discordUsername) {
 
 function sendRatedApp(app) {
     let currentStatus = 0
-    let votes = 0;
 
-    const appMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, currentStatus);
-
-    applicationChannel.send("<@589897267696107526> " + appMessage).then(function (returnMesage) {
+    const appMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, currentStatus, app.id);
+    applicationChannel.send("<@&589897267696107526>");
+    applicationChannel.send(appMessage).then(function (returnMesage) {
         returnMesage.react('👍');
         returnMesage.react('👎');
         //console.logconsole.log(returnMesage);
@@ -52,7 +56,6 @@ function sendRatedApp(app) {
                 if (reaction.emoji.name === '👍') {
                     serverContact.contactServer("modifyStatus", { "pin": pin, "status": 1, "mcUsername": app.mcUsername }, function (response) {
                         console.log("got into the function!")
-                        votes++;
                         if (Object.keys(response)[0] == "ErrorClass") {
                             const errorMessage = response[Object.keys(response)[0]].message;
                             const errorCode = response[Object.keys(response)[0]].errorCode;
@@ -60,25 +63,24 @@ function sendRatedApp(app) {
                         } else {
 
                             const currentStatus = response[Object.keys(response)[0]];
-                            if (currentStatus >= 4 && votes >= 4) {
-                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Approved");
+                            if (currentStatus >= 4 ) {
+                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Approved", app.id);
                                 applicationChannel.send(messagesJS.getApproved(app.mcUsername, currentStatus, app.discordUsername));
                                 const appliedUser = findUser(app.discordUsername);
                                 if (appliedUser != null) {
                                     appliedUser.send(messagesJS.sendDM(app.mcUsername, currentStatus, "Approved"));
                                 }
-                            } else if (currentStatus <= 0 && votes >= 4) {
-                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Denied");
+                            } else if (currentStatus <= 0 ) {
+                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Denied", app.id);
                                 applicationChannel.send(messagesJS.getDenied(app.mcUsername, currentStatus, app.discordUsername));
                             } else {
-                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, currentStatus)
+                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, currentStatus, app.id)
                             }
                             returnMesage.edit(editedMessage);
                         }
                     });
                 } else if (reaction.emoji.name === '👎') {
                     serverContact.contactServer("modifyStatus", { "pin": pin, "status": -1, "mcUsername": app.mcUsername }, function (response) {
-                        votes++;
                         if (Object.keys(response)[0] == "ErrorClass") {
                             const errorMessage = response[Object.keys(response)[0]].message;
                             const errorCode = response[Object.keys(response)[0]].errorCode;
@@ -87,18 +89,18 @@ function sendRatedApp(app) {
                         } else {
 
                             const currentStatus = response[Object.keys(response)[0]];
-                            if (currentStatus >= 4 && votes >= 4) {
-                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Approved");
+                            if (currentStatus >= 4) {
+                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Approved", app.id);
                                 applicationChannel.send(messagesJS.getApproved(app.mcUsername, currentStatus, app.discordUsername));
-                            } else if (currentStatus <= 0 && votes >= 4) {
-                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Denied");
+                            } else if (currentStatus <= 0) {
+                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Denied", app.id);
                                 applicationChannel.send(messagesJS.getDenied(app.mcUsername, currentStatus, app.discordUsername));
                                 const appliedUser = findUser(app.discordUsername);
                                 if (appliedUser != null) {
                                     appliedUser.send(messagesJS.sendDM(app.mcUsername, currentStatus, "Denied"));
                                 }
                             } else {
-                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, currentStatus)
+                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, currentStatus, app.id)
                             }
                             returnMesage.edit(editedMessage);
                         }
@@ -116,7 +118,6 @@ function sendRatedApp(app) {
                 if (reaction.emoji.name === '👍') {
                     serverContact.contactServer("modifyStatus", { "pin": pin, "status": -1, "mcUsername": app.mcUsername }, function (response) {
                         console.log("got into the function!")
-                        votes--;
                         if (Object.keys(response)[0] == "ErrorClass") {
                             const errorMessage = response[Object.keys(response)[0]].message;
                             const errorCode = response[Object.keys(response)[0]].errorCode;
@@ -124,21 +125,19 @@ function sendRatedApp(app) {
                         } else {
 
                             const currentStatus = response[Object.keys(response)[0]];
-                            if (currentStatus >= 4 && votes >= 4) {
-                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Approved");
-
-                            } else if (currentStatus <= 0 && votes >= 4) {
-                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Denied")
+                            if (currentStatus >= 4) {
+                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Approved", app.id);
+                            } else if (currentStatus <= 0) {
+                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Denied", app.id)
 
                             } else {
-                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, currentStatus)
+                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, currentStatus, app.id)
                             }
                             returnMesage.edit(editedMessage);
                         }
                     });
                 } else if (reaction.emoji.name === '👎') {
                     serverContact.contactServer("modifyStatus", { "pin": pin, "status": 1, "mcUsername": app.mcUsername }, function (response) {
-                        votes--;
                         if (Object.keys(response)[0] == "ErrorClass") {
                             const errorMessage = response[Object.keys(response)[0]].message;
                             const errorCode = response[Object.keys(response)[0]].errorCode;
@@ -147,14 +146,14 @@ function sendRatedApp(app) {
                         } else {
 
                             const currentStatus = response[Object.keys(response)[0]];
-                            if (currentStatus >= 4 && votes >= 4) {
-                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Approved")
+                            if (currentStatus >= 4) {
+                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Approved", app.id)
 
-                            } else if (currentStatus <= 0 && votes >= 4) {
-                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Denied");
+                            } else if (currentStatus <= 0) {
+                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, "Denied", app.id);
 
                             } else {
-                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, currentStatus)
+                                editedMessage = messagesJS.getPlayerMessage(app.mcUsername, app.discordUsername, app.questions, app.mcUsername, currentStatus, app.id)
                             }
                             returnMesage.edit(editedMessage);
                         }
@@ -180,7 +179,7 @@ function sendApp(app) {
             for (let i = 1023 * (messageStr + 1); app.questions.charAt(i + 1) != " "; i--) {
                 if (app.questions.charAt(i) == " ") {
 
-                    const subStr = { "mcUsername": app.mcUsername, "discordUsername": app.discordUsername, "questions": app.questions.substring(prevEnd, i) };
+                    const subStr = { "mcUsername": app.mcUsername, "discordUsername": app.pendingDiscordUser, "questions": app.questions.substring(prevEnd, i) };
                     // console.log("+++++" + app.questions.substring(1023 * messageStr, i).length);
                     if (messageStr > 0) {
                         applicationChannel.send(messagesJS.getOversizedApp(subStr.questions));
@@ -192,8 +191,8 @@ function sendApp(app) {
             }
         }
     } else {
-        const subStr = { "mcUsername": app.mcUsername, "discordUsername": app.discordUsername, "questions": app.questions };
-        sendRatedApp(subStr);
+        //const subStr = { "mcUsername": app.mcUsername, "discordUsername": app.discordUsername, "questions": app.questions };
+        sendRatedApp(app);
     }
 }
 
@@ -225,8 +224,8 @@ app.get('/verifyAccount', function (req, res) {
 app.get('/displayApp', function (req, res) {
     const application = req.query.application;
     const response = JSON.parse(application);
-    console.log("the username is: " + findUser(response.Application.discordUsername));
-    if (findUser(response.Application.discordUsername) != undefined) {
+    console.log("the username is: " + findUser(response.Application.pendingDiscordUser));
+    if (findUser(response.Application.pendingDiscordUser) != undefined) {
         sendApp(response.Application);
         res.status(200).send({status: true});
     } else {

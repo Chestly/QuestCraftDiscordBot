@@ -8,13 +8,13 @@ module.exports = {
 
                 timestamp: new Date(),
                 footer: {
-                    text: "© https://www.questcraft.net"
+                    text: "© http://www.questcraft.net"
                 }
             }
         }
         return message
     },
-    getPlayerMessage: function (MCUser, discordName, application, requestedName, status) {
+    getPlayerMessage: function (MCUser, discordName, application, requestedName, status, id) {
         const message = {
             embed: {
                 color: 3066993,
@@ -39,11 +39,15 @@ module.exports = {
                 {
                     name: "Application Status",
                     value: status + "/4"
+                },
+                {
+                    name: "ID",
+                    value: id
                 }
                 ],
                 timestamp: new Date(),
                 footer: {
-                    text: "© https://www.questcraft.net"
+                    text: "© http://www.questcraft.net"
                 }
             }
         }
@@ -66,7 +70,7 @@ module.exports = {
                 ],
                 timestamp: new Date(),
                 footer: {
-                    text: "© https://www.questcraft.net"
+                    text: "© http://www.questcraft.net"
                 }
             }
         }
@@ -94,7 +98,7 @@ module.exports = {
                 ],
                 timestamp: new Date(),
                 footer: {
-                    text: "© https://www.questcraft.net"
+                    text: "© http://www.questcraft.net"
                 }
             }
         }
@@ -122,7 +126,7 @@ module.exports = {
                 ],
                 timestamp: new Date(),
                 footer: {
-                    text: "© https://www.questcraft.net"
+                    text: "© http://www.questcraft.net"
                 }
             }
         }
@@ -146,7 +150,7 @@ module.exports = {
                 ],
                 timestamp: new Date(),
                 footer: {
-                    text: "© https://www.questcraft.net"
+                    text: "© http://www.questcraft.net"
                 }
             }
         }
